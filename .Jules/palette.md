@@ -1,0 +1,3 @@
+## 2025-05-15 - Consolidating Streaming Error Handling
+**Learning:** In SSE (Server-Sent Events) streaming, error messages can be returned in different ways: as part of a default event or a specific 'error' event. If the error handling logic is fragmented, it can lead to generic or swallowed error messages, significantly degrading the developer experience (DX). Consolidating this logic ensures that specific API error details are always surfaced, providing actionable feedback to the developer.
+**Action:** When implementing or refactoring SSE clients, use a centralized error extraction pattern that checks for error payloads across all relevant event types and prioritizes specific messages over generic fallbacks.

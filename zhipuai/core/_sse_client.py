@@ -49,63 +49,25 @@ class StreamResponse(Generic[ResponseT]):
 		for sse in iterator:
 			if sse.data.startswith('[DONE]'):
 				break
-			if sse.event is None:
-				data = sse.json_data()
-				if isinstance(data, Mapping) and data.get('agent_id'):
-					yield self._data_process_func(
-						data=data,
-						cast_type=self._cast_type,
-						response=self.response,
-					)
-					continue
-				if isinstance(data, Mapping) and data.get('error'):
-					raise APIResponseError(
-						message='An error occurred during streaming',
-						request=self.response.request,
-						json_data=data['error'],
-					)
-			if sse.event is None:
-				data = sse.json_data()
-				if is_mapping(data) and data.get('error'):
-					message = None
-					error = data.get('error')
-					if is_mapping(error):
-						message = error.get('message')
-					if not message or not isinstance(message, str):
-						message = 'An error occurred during streaming'
 
-					raise APIResponseError(
-						message=message,
-						request=self.response.request,
-						json_data=data['error'],
-					)
-				yield self._data_process_func(
-					data=data, cast_type=self._cast_type, response=self.response
+			data = sse.json_data()
+			if (sse.event is None or sse.event == 'error') and is_mapping(data) and data.get('error'):
+				error = data.get('error')
+				message = None
+				if is_mapping(error):
+					message = error.get('message')
+				if not message or not isinstance(message, str):
+					message = 'An error occurred during streaming'
+
+				raise APIResponseError(
+					message=message,
+					request=self.response.request,
+					json_data=error,
 				)
 
-			else:
-				data = sse.json_data()
-
-				if (
-					sse.event == 'error'
-					and is_mapping(data)
-					and data.get('error')
-				):
-					message = None
-					error = data.get('error')
-					if is_mapping(error):
-						message = error.get('message')
-					if not message or not isinstance(message, str):
-						message = 'An error occurred during streaming'
-
-					raise APIResponseError(
-						message=message,
-						request=self.response.request,
-						json_data=data['error'],
-					)
-				yield self._data_process_func(
-					data=data, cast_type=self._cast_type, response=self.response
-				)
+			yield self._data_process_func(
+				data=data, cast_type=self._cast_type, response=self.response
+			)
 
 		for sse in iterator:
 			pass
