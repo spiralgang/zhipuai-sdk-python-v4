@@ -36,7 +36,7 @@ class ZhipuAI(HttpClient):
         if api_key is None:
             api_key = os.environ.get("ZHIPUAI_API_KEY")
         if api_key is None:
-            raise ZhipuAIError("未提供api_key，请通过参数或环境变量提供")
+            raise ZhipuAIError("未提供 api_key，请通过参数或环境变量 ZHIPUAI_API_KEY 提供。您可以在智谱 AI 开放平台获取 API Key: https://open.bigmodel.cn/")
         self.api_key = api_key
         self.source_channel = source_channel
         self._disable_token_cache = disable_token_cache

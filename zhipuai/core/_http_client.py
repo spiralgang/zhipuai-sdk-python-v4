@@ -865,22 +865,38 @@ class HttpClient:
         opts = FinalRequestOptions.construct(method=method, url=path, json_data=body, **options)
         return self._request_api_list(model, page, opts)
 
-    def _make_status_error(self, response) -> APIStatusError:
-        response_text = response.text.strip()
+    def _make_status_error(self, response: httpx.Response) -> APIStatusError:
         status_code = response.status_code
-        error_msg = f"Error code: {status_code}, with error text {response_text}"
+        request_id = response.headers.get("x-request-id")
+
+        try:
+            data = response.json()
+            if is_mapping(data):
+                error = data.get("error")
+                if is_mapping(error):
+                    error_msg = error.get("message") or error.get("msg") or response.text.strip()
+                else:
+                    error_msg = data.get("message") or data.get("msg") or response.text.strip()
+            else:
+                error_msg = response.text.strip()
+        except Exception:
+            error_msg = response.text.strip()
+
+        message = f"Error code: {status_code}, message: {error_msg}"
+        if request_id:
+            message += f" [Request ID: {request_id}]"
 
         if status_code == 400:
-            return _errors.APIRequestFailedError(message=error_msg, response=response)
+            return _errors.APIRequestFailedError(message=message, response=response)
         elif status_code == 401:
-            return _errors.APIAuthenticationError(message=error_msg, response=response)
+            return _errors.APIAuthenticationError(message=message, response=response)
         elif status_code == 429:
-            return _errors.APIReachLimitError(message=error_msg, response=response)
+            return _errors.APIReachLimitError(message=message, response=response)
         elif status_code == 500:
-            return _errors.APIInternalError(message=error_msg, response=response)
+            return _errors.APIInternalError(message=message, response=response)
         elif status_code == 503:
-            return _errors.APIServerFlowExceedError(message=error_msg, response=response)
-        return APIStatusError(message=error_msg, response=response)
+            return _errors.APIServerFlowExceedError(message=message, response=response)
+        return APIStatusError(message=message, response=response)
 
 
 def make_request_options(
