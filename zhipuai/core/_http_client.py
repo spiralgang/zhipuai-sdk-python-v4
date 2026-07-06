@@ -868,7 +868,27 @@ class HttpClient:
     def _make_status_error(self, response) -> APIStatusError:
         response_text = response.text.strip()
         status_code = response.status_code
-        error_msg = f"Error code: {status_code}, with error text {response_text}"
+
+        message = ""
+        try:
+            json_data = response.json()
+            if isinstance(json_data, dict):
+                error_data = json_data.get("error")
+                if isinstance(error_data, dict):
+                    message = error_data.get("message") or error_data.get("msg") or ""
+                if not message:
+                    message = json_data.get("message") or json_data.get("msg") or ""
+        except Exception:
+            pass
+
+        request_id = response.headers.get("x-request-id")
+        if message:
+            error_msg = f"Error code: {status_code}, with error message {message}"
+        else:
+            error_msg = f"Error code: {status_code}, with error text {response_text}"
+
+        if request_id:
+            error_msg += f" (request id: {request_id})"
 
         if status_code == 400:
             return _errors.APIRequestFailedError(message=error_msg, response=response)
