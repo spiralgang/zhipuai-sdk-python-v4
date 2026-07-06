@@ -870,16 +870,19 @@ class HttpClient:
         status_code = response.status_code
 
         message = ""
-        try:
-            json_data = response.json()
-            if isinstance(json_data, dict):
-                error_data = json_data.get("error")
-                if isinstance(error_data, dict):
-                    message = error_data.get("message") or error_data.get("msg") or ""
-                if not message:
-                    message = json_data.get("message") or json_data.get("msg") or ""
-        except Exception:
-            pass
+        if response_text:
+            try:
+                json_data = response.json()
+                if isinstance(json_data, dict):
+                    error_data = json_data.get("error")
+                    if isinstance(error_data, dict):
+                        message = error_data.get("message") or error_data.get("msg") or ""
+                    elif isinstance(error_data, str):
+                        message = error_data
+                    if not message:
+                        message = json_data.get("message") or json_data.get("msg") or ""
+            except Exception:
+                pass
 
         request_id = response.headers.get("x-request-id")
         if message:
