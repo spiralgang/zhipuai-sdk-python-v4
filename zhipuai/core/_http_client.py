@@ -865,10 +865,30 @@ class HttpClient:
         opts = FinalRequestOptions.construct(method=method, url=path, json_data=body, **options)
         return self._request_api_list(model, page, opts)
 
-    def _make_status_error(self, response) -> APIStatusError:
+    def _make_status_error(self, response: httpx.Response) -> APIStatusError:
         response_text = response.text.strip()
         status_code = response.status_code
-        error_msg = f"Error code: {status_code}, with error text {response_text}"
+
+        request_id = response.headers.get("x-request-id")
+
+        try:
+            data = response.json()
+        except Exception:
+            data = None
+
+        message = None
+        if isinstance(data, dict):
+            message = data.get("message") or data.get("msg")
+            if not message and isinstance(data.get("error"), dict):
+                message = data.get("error", {}).get("message")
+
+        if message:
+            error_msg = f"Error code: {status_code}, message: {message}"
+        else:
+            error_msg = f"Error code: {status_code}, with error text {response_text}"
+
+        if request_id:
+            error_msg += f" [Request ID: {request_id}]"
 
         if status_code == 400:
             return _errors.APIRequestFailedError(message=error_msg, response=response)
