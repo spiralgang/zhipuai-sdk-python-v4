@@ -38,3 +38,12 @@ def test_make_status_error_with_json_body_msg():
     response = httpx.Response(400, content=json_content, request=httpx.Request("POST", "https://api.example.com"))
     err = client._make_status_error(response)
     assert "Alternative error message" in str(err)
+
+def test_make_status_error_with_json_body_error_string():
+    client = HttpClient(version="1.0.0", base_url=httpx.URL("https://api.example.com"), _strict_response_validation=False, timeout=60.0)
+
+    # Test with JSON response body containing error as a string
+    json_content = b'{"error": "Simple error string"}'
+    response = httpx.Response(400, content=json_content, request=httpx.Request("POST", "https://api.example.com"))
+    err = client._make_status_error(response)
+    assert "Simple error string" in str(err)
