@@ -880,7 +880,10 @@ class HttpClient:
             pass
 
         if not message:
-            message = response.text.strip()
+            message = response.text.strip() or response.reason_phrase
+
+        if message and len(message) > 1024:
+            message = message[:1024] + "..."
 
         error_msg = f"Error code: {status_code}, message: {message}"
         if request_id:
