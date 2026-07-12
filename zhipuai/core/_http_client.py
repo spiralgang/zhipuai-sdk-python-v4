@@ -885,7 +885,10 @@ class HttpClient:
                     message = error_data
 
         if not message:
-            message = response.text.strip()
+            try:
+                message = response.text.strip()
+            except Exception:
+                message = response.content.decode("utf-8", errors="replace").strip()
 
         error_msg = f"Error code: {status_code}, message: {message}"
         if request_id:
