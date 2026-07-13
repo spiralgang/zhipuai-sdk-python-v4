@@ -18,18 +18,23 @@ __all__ = [
 
 
 class ZhipuAIError(Exception):
+    message: str
+
     def __init__(self, message: str, ) -> None:
         super().__init__(message)
+        self.message = message
 
 
 class APIStatusError(ZhipuAIError):
     response: httpx.Response
     status_code: int
+    request_id: str | None
 
     def __init__(self, message: str, *, response: httpx.Response) -> None:
         super().__init__(message)
         self.response = response
         self.status_code = response.status_code
+        self.request_id = response.headers.get("x-request-id")
 
 
 class APIRequestFailedError(APIStatusError):
