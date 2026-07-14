@@ -72,6 +72,7 @@ class APIResponseError(ZhipuAIError):
 class APIResponseValidationError(APIResponseError):
     status_code: int
     response: httpx.Response
+    request_id: str | None
 
     def __init__(
             self,
@@ -79,20 +80,29 @@ class APIResponseValidationError(APIResponseError):
             json_data: object | None, *,
             message: str | None = None
     ) -> None:
+        self.response = response
+        self.status_code = response.status_code
+        self.request_id = response.headers.get("x-request-id")
+        if message is None:
+            message = "Data returned by API invalid for expected schema."
+
+        if self.request_id:
+            message = f"{message.rstrip('.')}, request_id: {self.request_id}"
+
         super().__init__(
-            message=message or "Data returned by API invalid for expected schema.",
+            message=message,
             request=response.request,
             json_data=json_data
         )
-        self.response = response
-        self.status_code = response.status_code
 
 
 class APIConnectionError(APIResponseError):
-    def __init__(self, *, message: str = "Connection error.", request: httpx.Request) -> None:
+    def __init__(self, *, message: str | None = None, request: httpx.Request) -> None:
+        if message is None:
+            message = f"Connection error on {request.url}."
         super().__init__(message, request, json_data=None)
 
 
 class APITimeoutError(APIConnectionError):
     def __init__(self, request: httpx.Request) -> None:
-        super().__init__(message="Request timed out.", request=request)
+        super().__init__(message=f"Request timed out on {request.url}.", request=request)
