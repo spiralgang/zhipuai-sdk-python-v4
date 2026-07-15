@@ -5,3 +5,7 @@
 ## 2025-05-15 - Programmatic Access to Traceability IDs
 **Learning:** For SDKs, "UI" is the API surface. Adding direct attributes like `.request_id` and `.message` to exception objects provides a much better developer experience than forcing them to parse a formatted error string. It enables automated error logging and reporting tools to work more effectively.
 **Action:** When designing or modifying error classes in an SDK, ensure key metadata from the API response is exposed as public attributes on the exception object.
+
+## 2025-05-16 - Contextual Error Messages for Rapid Debugging
+**Learning:** For developers, a pleasant experience means minimal time spent investigating "blind" errors. Error messages that include the specific target URL (especially in environments with multiple endpoints or complex retries) provide immediate context, allowing the developer to identify the failure point at a glance without inspecting network logs.
+**Action:** Ensure all SDK-level exceptions (Status, Connection, Timeout) incorporate the target URL in their default string representation to enhance observability.
