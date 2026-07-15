@@ -89,10 +89,10 @@ class APIResponseValidationError(APIResponseError):
 
 
 class APIConnectionError(APIResponseError):
-    def __init__(self, *, message: str = "Connection error.", request: httpx.Request) -> None:
-        super().__init__(message, request, json_data=None)
+    def __init__(self, *, message: str | None = None, request: httpx.Request) -> None:
+        super().__init__(message or f"Connection error, url: {request.url}", request, json_data=None)
 
 
 class APITimeoutError(APIConnectionError):
     def __init__(self, request: httpx.Request) -> None:
-        super().__init__(message="Request timed out.", request=request)
+        super().__init__(message=f"Request timed out, url: {request.url}", request=request)
