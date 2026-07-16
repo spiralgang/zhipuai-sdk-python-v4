@@ -893,6 +893,7 @@ class HttpClient:
         error_msg = f"Error code: {status_code}, message: {message}"
         if request_id:
             error_msg += f", request_id: {request_id}"
+        error_msg += f", url: {response.request.url}"
 
         if status_code == 400:
             return _errors.APIRequestFailedError(message=error_msg, response=response)
