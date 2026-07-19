@@ -5,3 +5,7 @@
 ## 2025-05-15 - Programmatic Access to Traceability IDs
 **Learning:** For SDKs, "UI" is the API surface. Adding direct attributes like `.request_id` and `.message` to exception objects provides a much better developer experience than forcing them to parse a formatted error string. It enables automated error logging and reporting tools to work more effectively.
 **Action:** When designing or modifying error classes in an SDK, ensure key metadata from the API response is exposed as public attributes on the exception object.
+
+## 2025-05-16 - Contextual URL Inclusion in SDK Exceptions
+**Learning:** Including target request URLs directly within default error messages of network/connection, timeout, and schema validation exceptions dramatically improves tracing capability without requiring verbose logging setups.
+**Action:** Propagate the underlying request URL from the `httpx.Request` or `httpx.Response` object into exception messages, leveraging parent class inheritance where applicable to keep the implementation clean.
