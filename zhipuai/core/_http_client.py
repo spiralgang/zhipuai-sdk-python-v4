@@ -890,7 +890,8 @@ class HttpClient:
             except Exception:
                 message = response.content.decode("utf-8", errors="replace").strip()
 
-        error_msg = f"Error code: {status_code}, message: {message}"
+        url = str(response.request.url)
+        error_msg = f"Error code: {status_code}, message: {message}, url: {url}"
         if request_id:
             error_msg += f", request_id: {request_id}"
 
