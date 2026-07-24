@@ -84,8 +84,11 @@ class APIResponseValidationError(APIResponseError):
 		*,
 		message: str | None = None,
 	) -> None:
+		url = response.request.url
+		base_msg = message or 'Data returned by API invalid for expected schema.'
+		msg = f'{base_msg.rstrip(".")}, url: {url}'
 		super().__init__(
-			message=message or 'Data returned by API invalid for expected schema.',
+			message=msg,
 			request=response.request,
 			json_data=json_data,
 		)
@@ -98,7 +101,8 @@ class APIConnectionError(APIResponseError):
 	def __init__(
 		self, *, message: str = 'Connection error.', request: httpx.Request
 	) -> None:
-		super().__init__(message, request, json_data=None)
+		base_msg = message.rstrip('.')
+		super().__init__(f'{base_msg}, url: {request.url}', request, json_data=None)
 
 
 class APITimeoutError(APIConnectionError):

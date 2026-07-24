@@ -944,12 +944,11 @@ class HttpClient:
 		error_msg = f'Error code: {status_code}, message: {message}'
 		if request_id:
 			error_msg += f', request_id: {request_id}'
-
 		url = None
-		try:
+		if hasattr(response, 'request') and response.request:
+			url = response.request.url
+		elif hasattr(response, 'url'):
 			url = response.url
-		except RuntimeError:
-			pass
 
 		if url:
 			error_msg += f', url: {url}'

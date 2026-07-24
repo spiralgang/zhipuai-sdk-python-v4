@@ -23,14 +23,14 @@ def test_api_connection_error_includes_url():
 	request = httpx.Request('GET', 'https://example.com/api/test')
 	err = APIConnectionError(message='Connection lost.', request=request)
 	assert 'url: https://example.com/api/test' in err.message
-	assert err.message == 'Connection lost., url: https://example.com/api/test'
+	assert err.message == 'Connection lost, url: https://example.com/api/test'
 
 
 def test_api_timeout_error_includes_url():
 	request = httpx.Request('GET', 'https://example.com/api/test')
 	err = APITimeoutError(request=request)
 	assert 'url: https://example.com/api/test' in err.message
-	assert err.message == 'Request timed out., url: https://example.com/api/test'
+	assert err.message == 'Request timed out, url: https://example.com/api/test'
 
 
 def test_api_response_validation_error_includes_url_and_request_id():
