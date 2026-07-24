@@ -56,3 +56,10 @@ def test_make_status_error_with_url_and_request_id():
 	assert 'invalid request parameters' in err.message
 	assert 'request_id: req-status-456' in err.message
 	assert 'url: https://example.com/api/status' in err.message
+
+
+def test_validation_error_with_no_request_or_url():
+	resp = httpx.Response(status_code=400)
+	err = APIResponseValidationError(response=resp, json_data=None)
+	# Since there is no request or url, we should fallback gracefully without crashing
+	assert 'url' not in err.message

@@ -80,9 +80,21 @@ class APIResponseValidationError(APIResponseError):
 		message: str | None = None,
 	) -> None:
 		base_message = message or 'Data returned by API invalid for expected schema.'
+		url = None
+		req = None
+		if getattr(response, '_request', None) is not None:
+			try:
+				req = response.request
+				url = req.url
+			except (RuntimeError, AttributeError):
+				pass
+
+		if url:
+			base_message = f'{base_message}, url: {url}'
+
 		super().__init__(
-			message=f'{base_message}, url: {response.request.url}',
-			request=response.request,
+			message=base_message,
+			request=req,
 			json_data=json_data,
 		)
 		self.response = response

@@ -940,10 +940,18 @@ class HttpClient:
 			except Exception:
 				message = response.content.decode('utf-8', errors='replace').strip()
 
+		url = None
+		if getattr(response, '_request', None) is not None:
+			try:
+				url = response.request.url
+			except (RuntimeError, AttributeError):
+				pass
+
 		error_msg = f'Error code: {status_code}, message: {message}'
 		if request_id:
 			error_msg += f', request_id: {request_id}'
-		error_msg += f', url: {response.request.url}'
+		if url:
+			error_msg += f', url: {url}'
 
 		if status_code == 400:
 			return _errors.APIRequestFailedError(message=error_msg, response=response)
