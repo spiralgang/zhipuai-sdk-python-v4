@@ -5,3 +5,7 @@
 ## 2025-05-15 - Programmatic Access to Traceability IDs
 **Learning:** For SDKs, "UI" is the API surface. Adding direct attributes like `.request_id` and `.message` to exception objects provides a much better developer experience than forcing them to parse a formatted error string. It enables automated error logging and reporting tools to work more effectively.
 **Action:** When designing or modifying error classes in an SDK, ensure key metadata from the API response is exposed as public attributes on the exception object.
+
+## 2025-05-16 - Self-Descriptive Input Validation Errors
+**Learning:** In SDK client initialization or authentication flows, failing on invalid inputs (like malformed API keys) with a generic python `Exception` provides poor developer experience. By explicitly raising a domain-specific `ZhipuAIError` with diagnostic hints that highlight the expected `<id>.<secret>` format, developers can immediately recognize and resolve their configuration issues without scanning documentation.
+**Action:** When validating core authentication parameters, raise structured, domain-specific exception classes containing actionable resolution examples.
