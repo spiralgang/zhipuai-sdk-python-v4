@@ -19,6 +19,10 @@ def test_token() -> None:
 	assert payload is not None
 	assert payload.get('api_key') == '12345678'
 
+	from zhipuai import ZhipuAIError
+
 	apikey = 'invalid_api_key'
-	with pytest.raises(Exception):
+	with pytest.raises(ZhipuAIError) as exc_info:
 		generate_token(apikey)
+	assert 'Invalid API key format' in str(exc_info.value)
+	assert "Expected format is '<id>.<secret>'" in str(exc_info.value)
