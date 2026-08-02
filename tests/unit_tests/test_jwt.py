@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import jwt
 import pytest
 
+from zhipuai.core._errors import ZhipuAIError
 from zhipuai.core._jwt_token import generate_token
 
 
@@ -20,5 +23,6 @@ def test_token() -> None:
 	assert payload.get('api_key') == '12345678'
 
 	apikey = 'invalid_api_key'
-	with pytest.raises(Exception):
+	with pytest.raises(ZhipuAIError) as exc_info:
 		generate_token(apikey)
+	assert "Expected '<id>.<secret>' structure" in str(exc_info.value)

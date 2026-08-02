@@ -1,8 +1,12 @@
 # -*- coding:utf-8 -*-
+from __future__ import annotations
+
 import time
 
 import cachetools.func
 import jwt
+
+from ._errors import ZhipuAIError
 
 # 缓存时间 3分钟
 CACHE_TTL_SECONDS = 3 * 60
@@ -13,20 +17,23 @@ API_TOKEN_TTL_SECONDS = CACHE_TTL_SECONDS + 30
 
 @cachetools.func.ttl_cache(maxsize=10, ttl=CACHE_TTL_SECONDS)
 def generate_token(apikey: str):
-    try:
-        api_key, secret = apikey.split(".")
-    except Exception as e:
-        raise Exception("invalid api_key", e)
+	try:
+		api_key, secret = apikey.split('.')
+	except Exception as e:
+		raise ZhipuAIError(
+			"Invalid API key format. Expected '<id>.<secret>' structure. "
+			'Please check your API key.'
+		) from e
 
-    payload = {
-        "api_key": api_key,
-        "exp": int(round(time.time() * 1000)) + API_TOKEN_TTL_SECONDS * 1000,
-        "timestamp": int(round(time.time() * 1000)),
-    }
-    ret = jwt.encode(
-        payload,
-        secret,
-        algorithm="HS256",
-        headers={"alg": "HS256", "sign_type": "SIGN"},
-    )
-    return ret
+	payload = {
+		'api_key': api_key,
+		'exp': int(round(time.time() * 1000)) + API_TOKEN_TTL_SECONDS * 1000,
+		'timestamp': int(round(time.time() * 1000)),
+	}
+	ret = jwt.encode(
+		payload,
+		secret,
+		algorithm='HS256',
+		headers={'alg': 'HS256', 'sign_type': 'SIGN'},
+	)
+	return ret
