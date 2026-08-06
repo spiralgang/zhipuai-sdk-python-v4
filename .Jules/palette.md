@@ -5,3 +5,7 @@
 ## 2025-05-15 - Programmatic Access to Traceability IDs
 **Learning:** For SDKs, "UI" is the API surface. Adding direct attributes like `.request_id` and `.message` to exception objects provides a much better developer experience than forcing them to parse a formatted error string. It enables automated error logging and reporting tools to work more effectively.
 **Action:** When designing or modifying error classes in an SDK, ensure key metadata from the API response is exposed as public attributes on the exception object.
+
+## 2025-05-16 - Safe Key Verification and Security Leak Prevention
+**Learning:** During API key format verification in developer-facing SDKs, raising an exception that echoes invalid or malformed user input can accidentally leak sensitive credentials in application tracebacks or logger outputs. Preventing the echoing of raw inputs is a critical security-centric DX standard.
+**Action:** When validating API keys or credentials, raise structured library-specific exceptions detailing the expected format, but strictly avoid printing or echoing any part of the invalid raw input in the exception message.
