@@ -5,7 +5,9 @@ import httpx
 from zhipuai.core._errors import (
 	APIConnectionError,
 	APIResponseValidationError,
+	APIStatusError,
 	APITimeoutError,
+	ZhipuAIError,
 )
 from zhipuai.core._http_client import HttpClient
 
@@ -77,3 +79,19 @@ def test_http_client_make_status_error_incorporates_url_and_request_id():
 	assert 'request_id: req-status-456' in status_error.message
 	expected_url = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 	assert f'url: {expected_url}' in status_error.message
+
+
+def test_exception_repr():
+	base_err = ZhipuAIError('Generic error message')
+	assert repr(base_err) == "ZhipuAIError(message='Generic error message')"
+
+	request = httpx.Request('POST', 'https://api.example.com/v4/chat/completions')
+	headers = httpx.Headers({'x-request-id': 'req-repr-789'})
+	response = httpx.Response(401, request=request, headers=headers)
+
+	status_err = APIStatusError('Unauthorized request', response=response)
+	expected_repr = (
+		"APIStatusError(status_code=401, message='Unauthorized request', "
+		"request_id='req-repr-789')"
+	)
+	assert repr(status_err) == expected_repr
