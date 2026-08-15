@@ -4,8 +4,11 @@ import httpx
 
 from zhipuai.core._errors import (
 	APIConnectionError,
+	APIRequestFailedError,
 	APIResponseValidationError,
+	APIStatusError,
 	APITimeoutError,
+	ZhipuAIError,
 )
 from zhipuai.core._http_client import HttpClient
 
@@ -77,3 +80,26 @@ def test_http_client_make_status_error_incorporates_url_and_request_id():
 	assert 'request_id: req-status-456' in status_error.message
 	expected_url = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 	assert f'url: {expected_url}' in status_error.message
+
+
+def test_exception_repr():
+	z_err = ZhipuAIError('Base error message')
+	assert repr(z_err) == "ZhipuAIError(message='Base error message')"
+
+	req = httpx.Request('POST', 'https://api.example.com/v4/chat/completions')
+	headers = httpx.Headers({'x-request-id': 'req-repr-789'})
+	resp = httpx.Response(400, request=req, headers=headers)
+
+	status_err = APIStatusError('Status error message', response=resp)
+	expected_status = (
+		"APIStatusError(message='Status error message',"
+		" status_code=400, request_id='req-repr-789')"
+	)
+	assert repr(status_err) == expected_status
+
+	subclass_err = APIRequestFailedError('Request failed message', response=resp)
+	expected_subclass = (
+		"APIRequestFailedError(message='Request failed message',"
+		" status_code=400, request_id='req-repr-789')"
+	)
+	assert repr(subclass_err) == expected_subclass
