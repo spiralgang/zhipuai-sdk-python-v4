@@ -77,3 +77,30 @@ def test_http_client_make_status_error_incorporates_url_and_request_id():
 	assert 'request_id: req-status-456' in status_error.message
 	expected_url = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 	assert f'url: {expected_url}' in status_error.message
+
+
+def test_errors_repr_formatting():
+	from zhipuai.core._errors import ZhipuAIError
+
+	err = ZhipuAIError('Something went wrong')
+	assert repr(err) == "ZhipuAIError(message='Something went wrong')"
+
+	request = httpx.Request(
+		'POST', 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+	)
+	headers = httpx.Headers({'x-request-id': 'req-repr-789'})
+	response = httpx.Response(401, request=request, headers=headers)
+
+	client = HttpClient(
+		version='1.0.0',
+		base_url=httpx.URL('https://open.bigmodel.cn/api/paas/v4/'),
+		_strict_response_validation=False,
+		timeout=5.0,
+	)
+	status_err = client._make_status_error(response)
+
+	repr_str = repr(status_err)
+	assert repr_str.startswith('APIAuthenticationError(')
+	assert 'status_code=401' in repr_str
+	assert "request_id='req-repr-789'" in repr_str
+	assert 'message=' in repr_str
