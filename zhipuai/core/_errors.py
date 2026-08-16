@@ -27,6 +27,9 @@ class ZhipuAIError(Exception):
 		super().__init__(message)
 		self.message = message
 
+	def __repr__(self) -> str:
+		return f'{self.__class__.__name__}(message={self.message!r})'
+
 
 class APIStatusError(ZhipuAIError):
 	response: httpx.Response
@@ -38,6 +41,14 @@ class APIStatusError(ZhipuAIError):
 		self.response = response
 		self.status_code = response.status_code
 		self.request_id = response.headers.get('x-request-id')
+
+	def __repr__(self) -> str:
+		return (
+			f'{self.__class__.__name__}('
+			f'status_code={self.status_code!r}, '
+			f'request_id={self.request_id!r}, '
+			f'message={self.message!r})'
+		)
 
 
 class APIRequestFailedError(APIStatusError): ...
